@@ -26,6 +26,7 @@ namespace OptanoImplies
                 // only 1 crop for demonstration purposes
                 var crops = new List<string>();
                 crops.Add("Crop A");
+                crops.Add("Crop B");
 
                 // the assignment of a crop planted on a day in the horizon
                 var CropAssignment = new VariableCollection<int, string>(
@@ -40,6 +41,10 @@ namespace OptanoImplies
                     );
 
                 foreach (var day in horizon)
+                {
+                    // max 1 crop per day
+                    model.AddConstraint(Expression.Sum(crops.Select(crop => CropAssignment[day, crop])) <= 1);
+
                     foreach (var crop in crops)
                     {
                         // let's say a crop grows for 2 days after the day it was planted
@@ -47,28 +52,25 @@ namespace OptanoImplies
 
                         if (cropGrowing.Count() == 2)
                         {
-                            // crop assignment current crop on current day = 1
-                            var cropPlantedOnDayConstraint = new Constraint(CropAssignment[day, crop], "", 1, 1);
-
-                            // sum of crop assignment for all crops on next two days = 0
-                            var cropGrowingOnDaysConstraint = new Constraint(Expression.Sum(cropGrowing.SelectMany(d => crops.Select(c => CropAssignment[d, c]))), "", 0, 0);
-
-                            // if cropPlantedOnDayConstraint is fulfilled, cropGrowingOnDaysConstraint must also be fulfilled
-                            var impliesConstraint = cropPlantedOnDayConstraint.Implies(cropGrowingOnDaysConstraint);
-                            model.AddConstraint(impliesConstraint);
+                            // set otherDay to zero, if the crop is planted on day.
+                            foreach (var otherDay in cropGrowing)
+                            {
+                                model.AddConstraint(-CropAssignment[day, crop] + 1 >= Expression.Sum(crops.Select(c => CropAssignment[otherDay, c])));
+                            }
                         }
                         else
                         {
                             // the crop can't finish before end of horizon
-                            var cropCantFinishGrowingConstraint = new Constraint(CropAssignment[day, crop], "", 0, 0);
+                            var cropCantFinishGrowingConstraint = CropAssignment[day, crop] == 0;
                             model.AddConstraint(cropCantFinishGrowingConstraint);
                         }
                     }
+                }
 
                 var total = Expression.Sum(horizon.SelectMany(day => crops.Select(crop => CropAssignment[day, crop])));
                 model.AddObjective(new Objective(total, "total", ObjectiveSense.Maximize));
 
-                using (var solver = new GLPKSolver())
+                using (var solver = new GLPKSolver())   
                 {
                     var solution = solver.Solve(model);
 
@@ -81,8 +83,6 @@ namespace OptanoImplies
                         {
                             if (CropAssignment[day, crop].Value == 1)
                                 Console.WriteLine($"Day {day} {crop} planted");
-                            else
-                                Console.WriteLine($"Day {day}");
                         }
                 }
             }
