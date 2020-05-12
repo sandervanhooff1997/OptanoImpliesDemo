@@ -47,15 +47,14 @@ namespace OptanoImplies
 
                         if (cropGrowing.Count() == 2)
                         {
-                            // crop assignment = 1 on current day
+                            // crop assignment current crop on current day = 1
                             var cropPlantedOnDayConstraint = new Constraint(CropAssignment[day, crop], "", 1, 1);
 
-                            // sum of crop assignment = 0 on next two days
-                            var cropGrowingOnDaysConstraint = new Constraint(Expression.Sum(cropGrowing.Select(d => CropAssignment[d, crop])), "", 0, 0);
+                            // sum of crop assignment for all crops on next two days = 0
+                            var cropGrowingOnDaysConstraint = new Constraint(Expression.Sum(cropGrowing.SelectMany(d => crops.Select(c => CropAssignment[d, c]))), "", 0, 0);
 
-                            // if crop assignment = 1 on current day, sum of crop assignment must be 0 for next two days
+                            // if cropPlantedOnDayConstraint is fulfilled, cropGrowingOnDaysConstraint must also be fulfilled
                             var impliesConstraint = cropPlantedOnDayConstraint.Implies(cropGrowingOnDaysConstraint);
-
                             model.AddConstraint(impliesConstraint);
                         }
                         else
