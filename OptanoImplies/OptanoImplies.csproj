@@ -5,4 +5,26 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="OPTANO.Modeling" Version="3.3.0.474" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="libglpk-cli">
+      <HintPath>..\..\VAARuleBasedSolverPrototypes\OptanoGLPK-TeeltV1\libglpk-cli.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="glpk_4_65.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="libglpk-cli.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="libglpk_cli_native.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
