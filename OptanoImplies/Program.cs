@@ -21,7 +21,7 @@ namespace OptanoImplies
                 var model = new Model();
 
                 // days in crop planning
-                var horizon = Enumerable.Range(1, 10).ToList();
+                var horizon = Enumerable.Range(1, 9).ToList();
 
                 // only 1 crop for demonstration purposes
                 var crops = new List<string>();
